@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "file-sharing"
+version = "0.1.0"
+description = ""
+authors = ["Mihail <Misha200417@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+mongo = "^0.2.0"
+beanie = "^1.25.0"
+minio = "^7.2.4"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.2"
+ruff = "^0.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
