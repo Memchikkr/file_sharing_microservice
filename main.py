@@ -1,11 +1,13 @@
 import uvicorn
 
 from fastapi import FastAPI
-from config import ProjectConfig
-from router import router as files
+from src.file_sharing.config import ProjectConfig
+from src.file_sharing.router import router as files
+from mongo_database import client
 
 
 app = FastAPI()
+app.state.mongo_client = client
 app.include_router(files)
 
 if __name__ == '__main__':
