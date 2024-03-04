@@ -1,0 +1,46 @@
+version: '3'
+
+networks:
+  custom:
+    driver: bridge
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app
+    env_file:
+      - .env
+    environment:
+      MONGO_HOST: mongo
+    volumes:
+      - ./main.py:/app/main.py
+      - ./pyproject.toml:/app/pyproject.toml
+    ports:
+      - '8000:8000'
+    depends_on:
+      - mongo_db
+    command: bash -c "uvicorn main:app --host 0.0.0.0 --port 8000 --reload --ws-ping-interval 300 --ws-ping-timeout 300"
+    networks:
+      - custom
+
+  mongo_db:
+    image: mongo
+    container_name: "mongo_db"
+    ports:
+      - "27017:27017"
+    networks:
+      - custom
+
+  web:
+    container_name: "web"
+    image: nginx:alpine
+    depends_on:
+      - app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx:/app/nginx
+    networks:
+      - custom
