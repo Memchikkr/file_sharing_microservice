@@ -14,3 +14,4 @@ class ProjectConfig:
     MONGO_URL = f'mongodb://{MONGO_HOST}:{MONGO_PORT}/'
 
     FASTAPI_HOST = environ.get('FASTAPI_HOST')
+    
