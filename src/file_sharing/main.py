@@ -1,16 +1,16 @@
 import uvicorn
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from config import ProjectConfig
+from mongo_database import init_db
 from router import router as files
-from mongo_database import client_mongo
-from minio_storage import client_minio
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
 
-app = FastAPI()
-app.state.mongo_client = client_mongo
-app.state.minio_client = client_minio
-
+app = FastAPI(lifespan=lifespan)
 app.include_router(files)
 
 if __name__ == '__main__':
