@@ -1,9 +1,8 @@
 from beanie import Document
 
-
 class FileModel(Document):
-    id: int
-    name: str
+    filename: str
+    size_bytes: int
 
     class Settings:
         name = 'files'
