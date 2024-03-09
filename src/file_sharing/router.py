@@ -1,6 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, Path
+from fastapi import APIRouter, UploadFile, File, Path, BackgroundTasks
+from fastapi.responses import FileResponse
 from api_responses import FileApiResponse
 from service import FileService
+from tasks import remove_file
 
 router = APIRouter(
     prefix="/home"
@@ -16,11 +18,13 @@ async def upload_file(
 
 @router.get("/download/files/{filename}")
 async def download_file(
+    background_task: BackgroundTasks,
     filename: str = Path(..., min_length=1, max_length=500)
 ):
     service = FileService()
-    download_url = await service.download_file(filename=filename)
-    return {"download_url": download_url}
+    file_path = await service.download_file(filename=filename)
+    background_task.add_task(remove_file, file_path)
+    return FileResponse(path=file_path, filename=filename)
 
 
 @router.delete("/files/{filename}", status_code=204)
