@@ -6,3 +6,11 @@ class FileModel(Document):
 
     class Settings:
         name = 'files'
+
+
+class Security(Document):
+    filename: str
+    security_key: bytes
+
+    class Settings:
+        name = 'security'
