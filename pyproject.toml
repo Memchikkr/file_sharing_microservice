@@ -16,6 +16,8 @@ python-dotenv = "^1.0.1"
 motor = "^3.3.2"
 asyncio = "^3.4.3"
 python-multipart = "^0.0.9"
+cryptography = "^42.0.5"
+aiofiles = "^23.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
