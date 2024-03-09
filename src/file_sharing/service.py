@@ -2,7 +2,8 @@ from fastapi import UploadFile, HTTPException
 from io import BytesIO
 from minio.error import S3Error
 from minio_storage import client_minio
-from files_model import FileModel
+from mongo_models import FileModel
+from security_utils import SecurityUtils
 
 
 class FileService:
@@ -13,12 +14,13 @@ class FileService:
 
     async def upload_file(self, file: UploadFile):
         filename = file.filename
+        file_data = await SecurityUtils.encode_file(file=file, filename=filename)
         if await FileModel.find_one(FileModel.filename == filename):
             raise HTTPException(status_code=409, detail='File already exist')
         try:
             self.minio.put_object(
                 bucket_name=self.bucket_name,
-                data=BytesIO(file.file.read()),
+                data=BytesIO(file_data),
                 object_name=filename,
                 content_type=file.content_type,
                 length=-1,
@@ -32,14 +34,18 @@ class FileService:
 
     async def download_file(self, filename: str):
         await self.__check_file_exist(filename=filename)
+        file_path = 'files/' + f'{filename}'
         try:
-            download_url = self.minio.presigned_get_object(
+            self.minio.fget_object(
                 bucket_name=self.bucket_name,
-                object_name=filename
+                object_name=filename,
+                file_path=file_path
             )
         except S3Error as exc:
             raise HTTPException(status_code=404, detail=f"Ошибка при получении ссылки для скачивания: {exc}")
-        return download_url
+        await self.delete_file(filename=filename)
+        await SecurityUtils.decode_file(file_path=file_path, filename=filename)
+        return file_path
 
 
     async def delete_file(self, filename: str):
