@@ -1,5 +1,5 @@
 from minio import Minio
-from config import ProjectConfig
+from src.config import ProjectConfig
 
 
 client_minio = Minio(

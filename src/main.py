@@ -1,9 +1,9 @@
 import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from config import ProjectConfig
-from mongo_database import init_db
-from router import router as files
+from src.config import ProjectConfig
+from src.mongo_database import init_db
+from src.file_sharing.router import router as files
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -1,7 +1,9 @@
-FROM python:3.11
+FROM python:3.11-slim
 
-WORKDIR /app/
+WORKDIR /app
 ENV PYTHONPATH=/app
 RUN pip install poetry
-COPY . .
-RUN poetry config virtualenvs.create false && poetry install && poetry lock
+COPY .env src poetry.lock pyproject.toml /app/
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

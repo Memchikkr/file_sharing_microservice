@@ -1,9 +1,9 @@
 from fastapi import UploadFile, HTTPException
 from io import BytesIO
 from minio.error import S3Error
-from minio_storage import client_minio
-from mongo_models import FileModel
-from security_utils import SecurityUtils
+from src.minio_storage import client_minio
+from src.file_sharing.mongo_models import FileModel
+from src.file_sharing.security_utils import SecurityUtils
 
 
 class FileService:
@@ -27,14 +27,14 @@ class FileService:
                 part_size=10*1024*1024
             )
         except S3Error as exc:
-            raise HTTPException(status_code=404, detail=f"Ошибка при загрузке файла: {exc}")
+            raise HTTPException(status_code=400, detail=f"Ошибка при загрузке файла: {exc}")
         mongo_model = FileModel(filename=filename, size_bytes=file.size)
         await mongo_model.insert()
         return mongo_model
 
     async def download_file(self, filename: str):
         await self.__check_file_exist(filename=filename)
-        file_path = 'files/' + f'{filename}'
+        file_path = 'files/' + f'{filename}' # Сделать хранение файла в оперативной памяти
         try:
             self.minio.fget_object(
                 bucket_name=self.bucket_name,
@@ -42,7 +42,7 @@ class FileService:
                 file_path=file_path
             )
         except S3Error as exc:
-            raise HTTPException(status_code=404, detail=f"Ошибка при получении ссылки для скачивания: {exc}")
+            raise HTTPException(status_code=400, detail=f"Ошибка при получении ссылки для скачивания: {exc}")
         await self.delete_file(filename=filename)
         await SecurityUtils.decode_file(file_path=file_path, filename=filename)
         return file_path
@@ -52,7 +52,7 @@ class FileService:
         try:
             self.minio.remove_object(self.bucket_name, object_name=filename)
         except S3Error as exc:
-            raise HTTPException(status_code=404, detail=f"Ошибка при удалении файла: {exc}")
+            raise HTTPException(status_code=400, detail=f"Ошибка при удалении файла: {exc}")
         file_model = await self.__check_file_exist(filename=filename)
         await file_model.delete()
         return

@@ -1,14 +1,14 @@
 from fastapi import APIRouter, UploadFile, File, Path, BackgroundTasks
 from fastapi.responses import FileResponse
-from api_responses import FileApiResponse
-from service import FileService
-from tasks import remove_file
+from src.file_sharing.api_responses import FileApiResponse
+from src.file_sharing.service import FileService
+from src.file_sharing.tasks import remove_file
 
 router = APIRouter(
-    prefix="/home"
+    prefix="/files"
 )
 
-@router.post("/upload/files", status_code=201, response_model=FileApiResponse)
+@router.post("", status_code=201, response_model=FileApiResponse)
 async def upload_file(
     file: UploadFile = File(...)
 ):
@@ -16,9 +16,10 @@ async def upload_file(
     result = await service.upload_file(file=file)
     return result
 
-@router.get("/download/files/{filename}")
+@router.get("/{filename}")
 async def download_file(
     background_task: BackgroundTasks,
+    # service = Depends(FileService)
     filename: str = Path(..., min_length=1, max_length=500)
 ):
     service = FileService()
@@ -27,7 +28,7 @@ async def download_file(
     return FileResponse(path=file_path, filename=filename)
 
 
-@router.delete("/files/{filename}", status_code=204)
+@router.delete("/{filename}", status_code=204)
 async def delete_file(
     filename: str = Path(..., min_length=1, max_length=500)
 ):

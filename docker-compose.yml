@@ -13,16 +13,14 @@ services:
     env_file:
       - .env
     environment:
-      MONGO_HOST: mongo
+      MONGO_HOST: mongo_db
     volumes:
-      - ./src:/app/src/
-      - ./pyproject.toml:/app/pyproject.toml
+      - ./src:/app/src
     ports:
       - '8000:8000'
     depends_on:
       - mongo_db
       - minio
-    command: bash -c "uvicorn ./src/file_sharing/main:app --host 0.0.0.0 --port 8000 --reload --ws-ping-interval 300 --ws-ping-timeout 300"
     networks:
       - custom
 
