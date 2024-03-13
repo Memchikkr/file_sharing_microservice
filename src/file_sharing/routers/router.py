@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Path, BackgroundTasks, Depends
 from fastapi.responses import FileResponse
-from src.file_sharing.api_responses import FileApiResponse
+from src.file_sharing.schemas.api_responses import FileApiResponse
 from src.file_sharing.services.base_service import FileServiceBase
 from src.file_sharing.dependencies.depends import minio_service
-from src.file_sharing.tasks import remove_file
+from src.file_sharing.tasks.tasks import remove_file
 
 router = APIRouter(
     prefix="/files"

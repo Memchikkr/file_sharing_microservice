@@ -6,7 +6,7 @@ from io import BytesIO
 from minio.error import S3Error
 from src.minio_storage import client_minio
 from src.file_sharing.models.file import FileDoc
-from src.file_sharing.security_utils import encode_file, decode_file
+from src.file_sharing.utils.security_utils import encode_file, decode_file
 from src.file_sharing.services.base_service import FileServiceBase
 
 

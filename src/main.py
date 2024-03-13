@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from src.config import ProjectConfig
 from src.mongo_database import init_db
-from src.file_sharing.router import router as files
+from src.file_sharing.routers.router import router as files
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
