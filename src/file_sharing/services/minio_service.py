@@ -6,7 +6,7 @@ from io import BytesIO
 from minio.error import S3Error
 from src.minio_storage import client_minio
 from src.file_sharing.models.file import FileDoc
-from src.file_sharing.security_utils import SecurityUtils
+from src.file_sharing.security_utils import encode_file, decode_file
 from src.file_sharing.services.base_service import FileServiceBase
 
 
@@ -16,10 +16,10 @@ class MinioFileService(FileServiceBase):
         self.minio = client_minio
         self.bucket_name = 'data'
 
-    async def upload_file(self, file: UploadFile):
+    async def upload_file(self, file: UploadFile) -> FileDoc:
         extension = file.filename.split('.')[1]
         new_filename = f'{uuid.uuid4()}.{extension}'
-        file_data, security_document = await SecurityUtils.encode_file(file=file, filename=file.filename)
+        file_data, security_document = await encode_file(file=file, filename=file.filename)
         try:
             self.minio.put_object(
                 bucket_name=self.bucket_name,
@@ -35,7 +35,7 @@ class MinioFileService(FileServiceBase):
         await FileDoc.insert_one(document=file_document)
         return file_document
 
-    async def download_file(self, filename: str):
+    async def download_file(self, filename: str) -> tuple[str, str]:
         file_doc = await self.__check_file_exist(filename=filename)
         file_path = 'files/' + f'{filename}'
         try:
@@ -47,11 +47,11 @@ class MinioFileService(FileServiceBase):
         except S3Error as exc:
             raise HTTPException(status_code=400, detail=f"Ошибка при получении ссылки для скачивания: {exc}")
         orig_filename = await self.delete_file(filename=filename)
-        await SecurityUtils.decode_file(file_path=file_path, file_doc=file_doc)
+        await decode_file(file_path=file_path, file_doc=file_doc)
         return file_path, orig_filename
 
 
-    async def delete_file(self, filename: str):
+    async def delete_file(self, filename: str) -> str:
         try:
             self.minio.remove_object(self.bucket_name, object_name=filename)
         except S3Error as exc:
@@ -62,7 +62,7 @@ class MinioFileService(FileServiceBase):
         return orig_filename
 
 
-    async def __check_file_exist(self, filename: str):
+    async def __check_file_exist(self, filename: str) -> FileDoc:
         file_doc = await FileDoc.find_one(FileDoc.filename == filename, fetch_links=True)
         if not file_doc:
             raise HTTPException(status_code=404, detail='Not found')
