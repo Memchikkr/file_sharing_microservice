@@ -7,9 +7,10 @@ from minio.error import S3Error
 from src.minio_storage import client_minio
 from src.file_sharing.models.file import FileDoc
 from src.file_sharing.security_utils import SecurityUtils
+from src.file_sharing.services.base_service import FileServiceBase
 
 
-class FileService:
+class MinioFileService(FileServiceBase):
 
     def __init__(self) -> None:
         self.minio = client_minio
