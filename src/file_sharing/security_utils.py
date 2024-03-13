@@ -2,7 +2,8 @@ import aiofiles
 
 from fastapi import UploadFile
 from cryptography.fernet import Fernet
-from src.file_sharing.mongo_models import Security
+from src.file_sharing.models.security import SecurityDoc
+from src.file_sharing.models.file import FileDoc
 
 
 class SecurityUtils:
@@ -13,18 +14,16 @@ class SecurityUtils:
         fernet = Fernet(key)
         read_file = file.file.read()
         encrypted_data = fernet.encrypt(read_file)
-        mongo_model = Security(filename=filename, security_key=key)
-        await mongo_model.insert()
-        return encrypted_data
+        security_document = SecurityDoc(filename=filename, security_key=key)
+        await SecurityDoc.insert_one(document=security_document)
+        return encrypted_data, security_document
     
     @staticmethod
-    async def decode_file(file_path: str, filename: str):
-        security_doc = await Security.find_one(Security.filename == filename)
-        fernet = Fernet(security_doc.security_key)
+    async def decode_file(file_path: str, file_doc: FileDoc):
+        fernet = Fernet(file_doc.security.security_key)
         async with aiofiles.open(file_path, 'rb') as encrypted_file:
             encrypted = await encrypted_file.read()
         decrypted = fernet.decrypt(encrypted)
         async with aiofiles.open(file_path, 'wb') as dec_file:
             await dec_file.write(decrypted)
-        await security_doc.delete()
         return

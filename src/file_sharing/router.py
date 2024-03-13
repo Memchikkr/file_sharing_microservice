@@ -23,7 +23,7 @@ async def download_file(
     filename: str = Path(..., min_length=1, max_length=500)
 ):
     service = FileService()
-    file_path = await service.download_file(filename=filename)
+    file_path, filename = await service.download_file(filename=filename)
     background_task.add_task(remove_file, file_path)
     return FileResponse(path=file_path, filename=filename)
 

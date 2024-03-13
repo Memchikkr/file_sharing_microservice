@@ -17,6 +17,7 @@ services:
       MINIO_HOST: minio
     volumes:
       - ./src:/app/src
+      - ./files:/app/files
     ports:
       - '8000:8000'
     depends_on:
